@@ -20,10 +20,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.beans.FeatureDescriptor;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,14 +43,14 @@ public class CuentaService {
     private Validator validator;
 
     public List<Cuenta> consultarCuentasPorCliente(Long numeroCliente) {
-        Cliente cliente = clienteService.consultarCliente(numeroCliente);
+        Optional<Cliente> search = clienteService.consultarCliente(numeroCliente);
 
-        if(cliente == null) {
-            return null;
+        if(!search.isPresent()) {
+            return Collections.emptyList();
         }
 
         CuentaEntity filter = new CuentaEntity();
-        filter.setNumeroCliente(modelMapper.map(cliente, ClienteEntity.class));
+        filter.setNumeroCliente(modelMapper.map(search.get(), ClienteEntity.class));
 
         return cuentaRepository.findAll(Example.of(filter)).stream()
                 .filter(a -> !a.getEstado().equals(Parametro.EstadoCuenta.INA))
@@ -62,22 +59,21 @@ public class CuentaService {
                 .collect(Collectors.toList());
     }
 
-    public Cuenta consultarCuenta(Long numeroCuenta) {
+    public Optional<Cuenta> consultarCuenta(Long numeroCuenta) {
         return cuentaRepository.findById(numeroCuenta)
                 .filter(a -> !a.getEstado().equals(Parametro.EstadoCuenta.INA))
-                .map(a -> modelMapper.map(a, Cuenta.class))
-                .orElse(null);
+                .map(a -> modelMapper.map(a, Cuenta.class));
     }
 
-    public Cuenta crearCuenta(Long numeroCliente) {
-        Cliente cliente = clienteService.consultarCliente(numeroCliente);
+    public Optional<Cuenta> crearCuenta(Long numeroCliente) {
+        Optional<Cliente> search = clienteService.consultarCliente(numeroCliente);
 
-        if(cliente == null) {
-            return null;
+        if(!search.isPresent()) {
+            return Optional.empty();
         }
 
         CuentaEntity resultEntity = new CuentaEntity();
-        resultEntity.setNumeroCliente(modelMapper.map(cliente, ClienteEntity.class));
+        resultEntity.setNumeroCliente(modelMapper.map(search.get(), ClienteEntity.class));
         resultEntity.setSaldoDisponible(0L);
         resultEntity.setConsumosPendientesPago(0L);
         resultEntity.setEstado(Parametro.EstadoCuenta.ACT);
@@ -85,14 +81,14 @@ public class CuentaService {
         validateCuentaEntity(resultEntity);
         resultEntity = cuentaRepository.save(resultEntity);
 
-        return modelMapper.map(resultEntity, Cuenta.class);
+        return Optional.of(modelMapper.map(resultEntity, Cuenta.class));
     }
 
-    public Cuenta actualizarCuenta(Long numeroCuenta, Cuenta cuenta) {
-        Cuenta resource = consultarCuenta(numeroCuenta);
+    public Optional<Cuenta> actualizarCuenta(Long numeroCuenta, Cuenta cuenta) {
+        Optional<Cuenta> search = consultarCuenta(numeroCuenta);
 
-        if(resource == null) {
-            return null;
+        if(!search.isPresent()) {
+            return Optional.empty();
         }
 
         if (cuenta.getEstado() != null && cuenta.getEstado().equals(Parametro.EstadoCuenta.INA)) {
@@ -100,21 +96,23 @@ public class CuentaService {
             throw new IllegalArgumentException(message);
         }
 
-        BeanUtils.copyProperties(cuenta, resource, getNullProperties(cuenta));
-        CuentaEntity resultEntity = modelMapper.map(resource, CuentaEntity.class);
+        BeanUtils.copyProperties(cuenta, search.get(), getNullProperties(cuenta));
+        CuentaEntity resultEntity = modelMapper.map(search.get(), CuentaEntity.class);
         validateCuentaEntity(resultEntity);
         resultEntity = cuentaRepository.save(resultEntity);
 
-        return modelMapper.map(resultEntity, Cuenta.class);
+        return Optional.of(modelMapper.map(resultEntity, Cuenta.class));
     }
 
-    public Cuenta actualizarCuentaConTransaccion(Long numeroCuenta, Transaccion transaccion) {
+    public Optional<Cuenta> actualizarCuentaConTransaccion(Long numeroCuenta, Transaccion transaccion) {
         Long nuevoSaldoDisponible;
-        Cuenta resource = consultarCuenta(numeroCuenta);
+        Optional<Cuenta> search = consultarCuenta(numeroCuenta);
 
-        if(resource == null) {
-            return null;
+        if(!search.isPresent()) {
+            return Optional.empty();
         }
+
+        Cuenta resource = search.get();
 
         switch(transaccion.getTipo()) {
             case CON:
@@ -157,15 +155,17 @@ public class CuentaService {
         validateCuentaEntity(resultEntity);
         resultEntity = cuentaRepository.save(resultEntity);
 
-        return modelMapper.map(resultEntity, Cuenta.class);
+        return Optional.of(modelMapper.map(resultEntity, Cuenta.class));
     }
 
     public boolean eliminarCuenta(Long numeroCuenta) {
-        Cuenta resource = consultarCuenta(numeroCuenta);
+        Optional<Cuenta> search = consultarCuenta(numeroCuenta);
 
-        if(resource == null) {
+        if(!search.isPresent()) {
             return false;
         }
+
+        Cuenta resource = search.get();
 
         if(resource.getConsumosPendientesPago() > 0) {
             String message = messageSource.getMessage("del.cuentas.exc-outstanding-credit", null, Locale.getDefault());

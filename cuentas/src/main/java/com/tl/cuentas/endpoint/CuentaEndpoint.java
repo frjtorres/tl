@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @RestController
 public class CuentaEndpoint {
@@ -26,7 +27,7 @@ public class CuentaEndpoint {
     public ResponseEntity<List<Cuenta>> consultarCuentasPorCliente(@PathVariable("numeroCliente") Long numeroCliente) {
         List<Cuenta> resources = cuentaService.consultarCuentasPorCliente(numeroCliente);
 
-        if(resources == null) {
+        if(resources.isEmpty()) {
             String httpMessage = messageSource.getMessage("all.cuentas.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
@@ -36,52 +37,52 @@ public class CuentaEndpoint {
 
     @GetMapping("/cuentas/{numeroCuenta}")
     public ResponseEntity<Cuenta> consultarCuenta(@PathVariable("numeroCuenta") Long numeroCuenta) {
-        Cuenta resource = cuentaService.consultarCuenta(numeroCuenta);
+        Optional<Cuenta> resource = cuentaService.consultarCuenta(numeroCuenta);
 
-        if(resource == null) {
+        if(!resource.isPresent()) {
             String httpMessage = messageSource.getMessage("all.cuentas.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(resource);
+        return ResponseEntity.status(HttpStatus.OK).body(resource.get());
     }
 
     @PostMapping("/clientes/{numeroCliente}/cuentas")
-    public ResponseEntity<?> crearCuenta(@PathVariable("numeroCliente") Long numeroCliente) {
-        Cuenta resource = cuentaService.crearCuenta(numeroCliente);
+    public ResponseEntity<Cuenta> crearCuenta(@PathVariable("numeroCliente") Long numeroCliente) {
+        Optional<Cuenta> resource = cuentaService.crearCuenta(numeroCliente);
 
-        if(resource == null) {
+        if(!resource.isPresent()) {
             String httpMessage = messageSource.getMessage("all.cuentas.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(resource);
+        return ResponseEntity.status(HttpStatus.OK).body(resource.get());
     }
 
     @PatchMapping("/cuentas/{numeroCuenta}")
     public ResponseEntity<Cuenta> actualizarCuenta(@PathVariable Long numeroCuenta,
                                                    @RequestBody Cuenta cuenta) {
-        Cuenta resource = cuentaService.actualizarCuenta(numeroCuenta, cuenta);
+        Optional<Cuenta> resource = cuentaService.actualizarCuenta(numeroCuenta, cuenta);
 
-        if(resource == null) {
+        if(!resource.isPresent()) {
             String httpMessage = messageSource.getMessage("all.cuentas.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(resource);
+        return ResponseEntity.status(HttpStatus.OK).body(resource.get());
     }
 
     @PatchMapping("/cuentas/{numeroCuenta}/transacciones")
     public ResponseEntity<Cuenta> actualizarCuentaConTransaccion(@PathVariable Long numeroCuenta,
                                                                  @RequestBody Transaccion transaccion) {
-        Cuenta resource = cuentaService.actualizarCuentaConTransaccion(numeroCuenta, transaccion);
+        Optional<Cuenta> resource = cuentaService.actualizarCuentaConTransaccion(numeroCuenta, transaccion);
 
-        if(resource == null) {
+        if(!resource.isPresent()) {
             String httpMessage = messageSource.getMessage("all.cuentas.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(resource);
+        return ResponseEntity.status(HttpStatus.OK).body(resource.get());
     }
 
     @DeleteMapping("/cuentas/{numeroCuenta}")

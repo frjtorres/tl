@@ -17,16 +17,12 @@ public class AppConfig {
 
     @Bean
     public AuditorAware auditorProvider() {
-        AuditorAware auditorAware = Optional::empty;
-
-        return auditorAware;
+        return Optional::empty;
     }
 
     @Bean
     public ModelMapper modelMapper() {
-        ModelMapper modelMapper = new ModelMapper();
-
-        return modelMapper;
+        return new ModelMapper();
     }
 
     @Bean

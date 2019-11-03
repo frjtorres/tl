@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/clientes")
@@ -31,7 +32,7 @@ public class ClienteEndpoint {
         Parametro.TipoId enumTipoId = (tipoId != null)? Parametro.TipoId.valueOf(tipoId): null;
         List<Cliente> resources = clienteService.consultarClientesPorId(enumTipoId, numeroId);
 
-        if(resources == null) {
+        if(resources.isEmpty()) {
             String httpMessage = messageSource.getMessage("all.clientes.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
@@ -41,14 +42,14 @@ public class ClienteEndpoint {
 
     @GetMapping("/{numeroCliente}")
     public ResponseEntity<Cliente> consultarCliente(@PathVariable("numeroCliente") Long numeroCliente) {
-        Cliente resource = clienteService.consultarCliente(numeroCliente);
+        Optional<Cliente> resource = clienteService.consultarCliente(numeroCliente);
 
-        if(resource == null) {
+        if(!resource.isPresent()) {
             String httpMessage = messageSource.getMessage("all.clientes.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(resource);
+        return ResponseEntity.status(HttpStatus.OK).body(resource.get());
     }
 
     @PostMapping
@@ -61,14 +62,14 @@ public class ClienteEndpoint {
     @PatchMapping("/{numeroCliente}")
     public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long numeroCliente,
                                                     @RequestBody Cliente cliente) {
-        Cliente resource = clienteService.actualizarCliente(numeroCliente, cliente);
+        Optional<Cliente> resource = clienteService.actualizarCliente(numeroCliente, cliente);
 
-        if(resource == null) {
+        if(!resource.isPresent()) {
             String httpMessage = messageSource.getMessage("all.clientes.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(resource);
+        return ResponseEntity.status(HttpStatus.OK).body(resource.get());
     }
 
     @DeleteMapping("/{numeroCliente}")

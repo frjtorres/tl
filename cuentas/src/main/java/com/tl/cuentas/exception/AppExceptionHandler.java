@@ -17,15 +17,17 @@ public class AppExceptionHandler {
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(InvalidFormatException.class)
-    public ExceptionTemplate InvalidFormatExceptionHandler(InvalidFormatException ex, ServletWebRequest wr) {
+    public ExceptionTemplate invalidFormatExceptionHandler(InvalidFormatException ex, ServletWebRequest wr) {
         if(ex.getTargetType().isEnum()) {
-            Reference field = ex.getPath().stream()
-                    .findFirst()
-                    .orElse(null);
-            String reason = field.getFieldName() + ": Solo esta permitido los valores " +
-                            Arrays.toString(ex.getTargetType().getEnumConstants()) + ".";
+            Optional<Reference> field = ex.getPath().stream()
+                    .findFirst();
 
-            return new ExceptionTemplate(HttpStatus.CONFLICT, wr, reason);
+            if(field.isPresent()) {
+                String reason = field.get().getFieldName() + ": Solo esta permitido los valores " +
+                        Arrays.toString(ex.getTargetType().getEnumConstants()) + ".";
+
+                return new ExceptionTemplate(HttpStatus.CONFLICT, wr, reason);
+            }
         }
 
         return new ExceptionTemplate(HttpStatus.CONFLICT, wr);
@@ -33,7 +35,7 @@ public class AppExceptionHandler {
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ConstraintViolationException.class)
-    public ExceptionTemplate ConstraintViolationExceptionHandler(ConstraintViolationException ex, ServletWebRequest wr) {
+    public ExceptionTemplate constraintViolationExceptionHandler(ConstraintViolationException ex, ServletWebRequest wr) {
         List<String> reasons = ex.getConstraintViolations().stream()
                 .map(a -> a.getPropertyPath() + ": " + a.getMessage())
                 .sorted(Comparator.comparing(String::toString))
@@ -44,7 +46,7 @@ public class AppExceptionHandler {
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(IllegalArgumentException.class)
-    public ExceptionTemplate IllegalArgumentExceptionHandler(IllegalArgumentException ex, ServletWebRequest wr) {
+    public ExceptionTemplate illegalArgumentExceptionHandler(IllegalArgumentException ex, ServletWebRequest wr) {
         return new ExceptionTemplate(HttpStatus.CONFLICT, wr, ex.getMessage());
     }
 }

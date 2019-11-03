@@ -12,8 +12,6 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.validation.ConstraintViolation;
@@ -54,11 +52,10 @@ public class ClienteService {
                 .collect(Collectors.toList());
     }
 
-    public Cliente consultarCliente(Long numeroCliente) {
+    public Optional<Cliente> consultarCliente(Long numeroCliente) {
         return clienteRepository.findById(numeroCliente)
                 .filter(a -> a.getEstado().equals(Parametro.EstadoCliente.ACT))
-                .map(a -> modelMapper.map(a, Cliente.class))
-                .orElse(null);
+                .map(a -> modelMapper.map(a, Cliente.class));
     }
 
     public Cliente crearCliente(Cliente cliente) {
@@ -66,16 +63,16 @@ public class ClienteService {
         filter.setTipoId(cliente.getTipoId());
         filter.setNumeroId(cliente.getNumeroId());
 
-        ClienteEntity answer = clienteRepository.findOne(Example.of(filter)).orElse(null);
+        Optional<ClienteEntity> answer = clienteRepository.findOne(Example.of(filter));
 
-        if(answer != null && answer.getEstado().equals(Parametro.EstadoCliente.ACT)) {
+        if(answer.isPresent() && answer.get().getEstado().equals(Parametro.EstadoCliente.ACT)) {
             String message = messageSource.getMessage("cre.clientes.exc-already-exists", null, Locale.getDefault());
             throw new IllegalArgumentException(message);
         }
 
-        if(answer != null && answer.getEstado().equals(Parametro.EstadoCliente.INA)) {
-            cliente.setNumeroCliente(answer.getNumeroCliente());
-            cliente.setFechaCreacion(answer.getFechaCreacion());
+        if(answer.isPresent() && answer.get().getEstado().equals(Parametro.EstadoCliente.INA)) {
+            cliente.setNumeroCliente(answer.get().getNumeroCliente());
+            cliente.setFechaCreacion(answer.get().getFechaCreacion());
         }
 
         cliente.setEstado(Parametro.EstadoCliente.ACT);
@@ -86,28 +83,28 @@ public class ClienteService {
         return modelMapper.map(resultEntity, Cliente.class);
     }
 
-    public Cliente actualizarCliente(Long numeroCliente, Cliente cliente) {
-        Cliente resource = consultarCliente(numeroCliente);
+    public Optional<Cliente> actualizarCliente(Long numeroCliente, Cliente cliente) {
+        Optional<Cliente> search = consultarCliente(numeroCliente);
 
-        if(resource == null) {
-            return null;
+        if(!search.isPresent()) {
+            return Optional.empty();
         }
 
         cliente.setNumeroCliente(null);
         cliente.setTipoId(null);
         cliente.setNumeroId(null);
-        BeanUtils.copyProperties(cliente, resource, getNullProperties(cliente));
-        ClienteEntity resultEntity = modelMapper.map(resource, ClienteEntity.class);
+        BeanUtils.copyProperties(cliente, search.get(), getNullProperties(cliente));
+        ClienteEntity resultEntity = modelMapper.map(search.get(), ClienteEntity.class);
         validateClienteEntity(resultEntity);
         resultEntity = clienteRepository.save(resultEntity);
 
-        return modelMapper.map(resultEntity, Cliente.class);
+        return Optional.of(modelMapper.map(resultEntity, Cliente.class));
     }
 
     public boolean eliminarCliente(Long numeroCliente) {
-        Cliente resource = consultarCliente(numeroCliente);
+        Optional<Cliente> search = consultarCliente(numeroCliente);
 
-        if(resource == null) {
+        if(!search.isPresent()) {
             return false;
         }
 
@@ -118,6 +115,7 @@ public class ClienteService {
             throw new IllegalArgumentException(message);
         }
 
+        Cliente resource = search.get();
         resource.setEstado(Parametro.EstadoCliente.INA);
         ClienteEntity resultEntity = modelMapper.map(resource, ClienteEntity.class);
         clienteRepository.save(resultEntity);
