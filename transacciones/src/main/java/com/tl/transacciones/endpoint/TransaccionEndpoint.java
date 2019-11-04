@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Optional;
 
 @RestController
 public class TransaccionEndpoint {
@@ -53,14 +54,14 @@ public class TransaccionEndpoint {
 
     @GetMapping("/transacciones/{numeroTransaccion}")
     public ResponseEntity<Transaccion> consultarTransaccion(@PathVariable("numeroTransaccion") Long numeroTransaccion) {
-        Transaccion resource = transaccionService.consultarTransaccion(numeroTransaccion);
+        Optional<Transaccion> resource = transaccionService.consultarTransaccion(numeroTransaccion);
 
-        if(resource == null) {
+        if(!resource.isPresent()) {
             String httpMessage = messageSource.getMessage("all.transacciones.not-found", null, Locale.getDefault());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(resource);
+        return ResponseEntity.status(HttpStatus.OK).body(resource.get());
     }
 
     @PostMapping("/cuentas/{numeroCuenta}/recargas")

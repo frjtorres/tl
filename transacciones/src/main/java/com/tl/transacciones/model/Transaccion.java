@@ -8,7 +8,10 @@ import java.util.Date;
 
 @Data
 @NoArgsConstructor
-@JsonIgnoreProperties(value = "fechaCreacion", allowGetters = true)
+@JsonIgnoreProperties(value = {"numeroTransaccion", "tipo",
+                               "numeroCuenta", "fechaCreacion"},
+                      allowGetters = true,
+                      ignoreUnknown = true)
 public class Transaccion {
 
     private Long numeroTransaccion;

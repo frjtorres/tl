@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,9 +36,8 @@ public class TransaccionService {
         return cuenta;
     }
 
-    public Transaccion consultarTransaccion(Long numeroTransaccion) {
+    public Optional<Transaccion> consultarTransaccion(Long numeroTransaccion) {
         return transaccionRepository.findById(numeroTransaccion)
-                .map(a -> modelMapper.map(a, Transaccion.class))
-                .orElse(null);
+                .map(a -> modelMapper.map(a, Transaccion.class));
     }
 }

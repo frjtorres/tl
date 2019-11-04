@@ -11,7 +11,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.DiscriminatorValue;
-import java.util.Collections;
 import java.util.Locale;
 
 @Service

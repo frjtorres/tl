@@ -29,15 +29,13 @@ public class ConsumoService {
     private ModelMapper modelMapper;
 
     public Consumo crearConsumo(Cuenta cuenta, Consumo consumo) {
-        List<ConsumoEntity> consumosViajeReciente;
-
         if(!cuenta.getEstado().equals(Parametro.EstadoCuenta.ACT)) {
             String message = messageSource.getMessage("cre.consumo.exc-active-accounts", null, Locale.getDefault());
             throw new IllegalArgumentException(message);
         }
 
         CuentaEntity cuentaEntity = modelMapper.map(cuenta, CuentaEntity.class);
-        consumosViajeReciente = consumoRepository.consumosViajeReciente(cuentaEntity);
+        List<ConsumoEntity> consumosViajeReciente = consumoRepository.consumosViajeReciente(cuentaEntity);
 
         if(estaEnPeriodoDeTrasbordo(consumosViajeReciente) && !superaCantidadDeTrasbordos(consumosViajeReciente)) {
             consumo.setModalidad(Parametro.ModalidadConsumo.TRA);
@@ -68,16 +66,15 @@ public class ConsumoService {
             return false;
         }
 
-        ConsumoEntity entrada = consumosViajeReciente.stream()
+        Optional<ConsumoEntity> entrada = consumosViajeReciente.stream()
                 .filter(a -> a.getModalidad().equals(Parametro.ModalidadConsumo.ENT))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
 
-        if(entrada == null) {
+        if(!entrada.isPresent()) {
             return false;
         }
 
-        Date fechaCreacionEntrada = entrada.getFechaCreacion();
+        Date fechaCreacionEntrada = entrada.get().getFechaCreacion();
         Date fechaReciente = new Date(System.currentTimeMillis());
         Duration duracionEntradaReciente = Duration.between(fechaCreacionEntrada.toInstant(), fechaReciente.toInstant());
 
@@ -93,11 +90,11 @@ public class ConsumoService {
     }
 
     private long calcularCostoTrasbordo(List<ConsumoEntity> consumosViajeReciente, Consumo consumo) {
-        ConsumoEntity consumoEntityViajeReciente = consumosViajeReciente.stream()
-                .max(Comparator.comparing(TransaccionEntity::getFechaCreacion))
-                .orElse(null);
+        Optional<ConsumoEntity> consumoEntityViajeReciente = consumosViajeReciente.stream()
+                .max(Comparator.comparing(TransaccionEntity::getFechaCreacion));
 
-        if(consumoEntityViajeReciente.getServicio().equals(consumo.getServicio())) {
+        if(consumoEntityViajeReciente.isPresent() &&
+                consumoEntityViajeReciente.get().getServicio().equals(consumo.getServicio())) {
             return Parametro.COSTO_TRASBORDO_MISMO_SERVICIO;
         }
 
