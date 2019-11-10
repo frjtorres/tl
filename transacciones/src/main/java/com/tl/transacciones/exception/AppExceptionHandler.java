@@ -2,7 +2,9 @@ package com.tl.transacciones.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.boot.json.JacksonJsonParser;
+import org.springframework.boot.json.JsonParseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.util.NestedServletException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.*;
@@ -55,8 +58,13 @@ public class AppExceptionHandler {
 
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity httpClientErrorExceptionHandler(HttpClientErrorException ex, ServletWebRequest wr) {
-        String message = new JacksonJsonParser().parseMap(ex.getResponseBodyAsString()).get("message").toString();
-        ExceptionTemplate et = new ExceptionTemplate(ex.getStatusCode(), wr, message);
+        ExceptionTemplate et = new ExceptionTemplate(ex.getStatusCode(), wr);
+
+        try {
+            Map<String, Object> exceptionAttibutes = new JacksonJsonParser().parseMap(ex.getResponseBodyAsString());
+            String message = exceptionAttibutes.containsKey("message")? exceptionAttibutes.get("message").toString(): "";
+            et.addReason(message);
+        } catch (JsonParseException ignored) {}
 
         return ResponseEntity.status(ex.getStatusCode()).body(et);
     }

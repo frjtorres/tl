@@ -35,4 +35,12 @@ public final class ExceptionTemplate {
         this(status, wr);
         this.reasons.addAll(reasons);
     }
+
+    public void addReason(String reason) {
+        this.reasons.add(reason);
+    }
+
+    public void addReasons(List<String> reasons) {
+        this.reasons.addAll(reasons);
+    }
 }
