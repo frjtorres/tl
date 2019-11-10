@@ -67,7 +67,7 @@ public class TransaccionIntegration {
 	@Test
 	public void omitir_consulta_de_una_transaccion_para_cuenta_eliminada() throws Exception {
 		// given
-		long numeroTransaccion = 1001002001L;
+		long numeroTransaccion = 1001001011L;
 
 	    // when
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
