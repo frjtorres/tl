@@ -41,12 +41,12 @@ public class TransaccionEndpoint {
     @Autowired
     private MessageSource messageSource;
 
-    @Value("${com.tl.clientes.url}")
-    private String clientesUrl;
+    @Value("${com.tl.cuentas.url}")
+    private String cuentasUrl;
 
     @GetMapping("/cuentas/{numeroCuenta}/transacciones")
     public ResponseEntity<Cuenta> consultarTransaccionesPorCuenta(@PathVariable("numeroCuenta") Long numeroCuenta) {
-        Cuenta cuenta = restTemplate.getForEntity(clientesUrl + "/cuentas/" + numeroCuenta, Cuenta.class).getBody();
+        Cuenta cuenta = restTemplate.getForEntity(cuentasUrl + "/cuentas/" + numeroCuenta, Cuenta.class).getBody();
         Cuenta resource = transaccionService.consultarTransaccionesPorCuenta(cuenta);
 
         return ResponseEntity.status(HttpStatus.OK).body(resource);
@@ -61,15 +61,23 @@ public class TransaccionEndpoint {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
         }
 
+        long numeroCuenta = resource.get().getNumeroCuenta().getNumeroCuenta();
+        HttpStatus cuenta = restTemplate.getForEntity(cuentasUrl + "/cuentas/" + numeroCuenta, Cuenta.class).getStatusCode();
+
+        if(!cuenta.equals(HttpStatus.OK)) {
+            String httpMessage = messageSource.getMessage("all.transacciones.not-found", null, Locale.getDefault());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, httpMessage);
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(resource.get());
     }
 
     @PostMapping("/cuentas/{numeroCuenta}/recargas")
     public ResponseEntity<Cuenta> crearRecarga(@PathVariable("numeroCuenta") Long numeroCuenta,
                                                @RequestBody Recarga recarga) {
-        Cuenta cuenta = restTemplate.getForEntity(clientesUrl + "/cuentas/" + numeroCuenta, Cuenta.class).getBody();
+        Cuenta cuenta = restTemplate.getForEntity(cuentasUrl + "/cuentas/" + numeroCuenta, Cuenta.class).getBody();
         Recarga resource = recargaService.crearRecarga(cuenta, recarga);
-        cuenta = restTemplate.exchange(RequestEntity.patch(URI.create(clientesUrl + "/cuentas/" + numeroCuenta + "/transacciones"))
+        cuenta = restTemplate.exchange(RequestEntity.patch(URI.create(cuentasUrl + "/cuentas/" + numeroCuenta + "/transacciones"))
                                                     .contentType(MediaType.APPLICATION_JSON)
                                                     .body(resource), Cuenta.class).getBody();
         cuenta.setTransacciones(Collections.singletonList(resource));
@@ -80,9 +88,9 @@ public class TransaccionEndpoint {
     @PostMapping("/cuentas/{numeroCuenta}/consumos")
     public ResponseEntity<Cuenta> crearConsumo(@PathVariable("numeroCuenta") Long numeroCuenta,
                                                @RequestBody Consumo consumo) {
-        Cuenta cuenta = restTemplate.getForEntity(clientesUrl + "/cuentas/" + numeroCuenta , Cuenta.class).getBody();
+        Cuenta cuenta = restTemplate.getForEntity(cuentasUrl + "/cuentas/" + numeroCuenta, Cuenta.class).getBody();
         Consumo resource = consumoService.crearConsumo(cuenta, consumo);
-        cuenta = restTemplate.exchange(RequestEntity.patch(URI.create(clientesUrl + "/cuentas/" + numeroCuenta + "/transacciones"))
+        cuenta = restTemplate.exchange(RequestEntity.patch(URI.create(cuentasUrl + "/cuentas/" + numeroCuenta + "/transacciones"))
                                                     .contentType(MediaType.APPLICATION_JSON)
                                                     .body(resource), Cuenta.class).getBody();
         cuenta.setTransacciones(Collections.singletonList(resource));
