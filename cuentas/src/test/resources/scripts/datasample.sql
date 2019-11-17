@@ -33,33 +33,39 @@ VALUES(cuentas_skey.nextval, '1005', 10000, 0, 'ACT', '2019-01-01 12:00:00', '20
 INSERT INTO clientes (numero_cliente, tipo_id, numero_id, nombres, apellidos, estado, fecha_creacion, fecha_modificacion)
 VALUES(clientes_skey.nextval, 'CC', '1010678000', 'Antonio', 'Ariza', 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* consultarCuenta(s)Eliminada(s) */
+/* omitir_consulta_de_cuentas_eliminadas */
+/* omitir_consulta_de_cuenta_eliminada */
 -- 1001002
 INSERT INTO cuentas (numero_cuenta, numero_cliente, saldo_disponible, consumos_pendientes_pago, estado, fecha_creacion, fecha_modificacion)
 VALUES(cuentas_skey.nextval, '1006', 10000, 0, 'INA', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* actualizarCuentasParaEliminarlas */
+/* omitir_eliminacion_de_cuentas_al_actualizarlas */
 -- 1001003
 INSERT INTO cuentas (numero_cuenta, numero_cliente, saldo_disponible, consumos_pendientes_pago, estado, fecha_creacion, fecha_modificacion)
 VALUES(cuentas_skey.nextval, '1006', 10000, 0, 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* actualizarCuentasMaximoSaldoPermitido */
+/* omitir_recargas_si_el_nuevo_saldo_disponible_supera_el_limite */
 -- 1001004
 INSERT INTO cuentas (numero_cuenta, numero_cliente, saldo_disponible, consumos_pendientes_pago, estado, fecha_creacion, fecha_modificacion)
 VALUES(cuentas_skey.nextval, '1006', 0, 0, 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* actualizarCuentasRecargasInsuficientes */
+/* omitir_recargas_si_el_monto_es_insuficiente_para_cubrir_los_consumos_pendientes_por_pago */
 -- 1001005
 INSERT INTO cuentas (numero_cuenta, numero_cliente, saldo_disponible, consumos_pendientes_pago, estado, fecha_creacion, fecha_modificacion)
 VALUES(cuentas_skey.nextval, '1006', -2400, 1, 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* actualizarCuentasMaximoCreditoPermitido*/
+/* omitir_consumos_si_el_numero_de_consumos_pendientes_por_pago_supera_el_limite*/
 -- 1001006
 INSERT INTO cuentas (numero_cuenta, numero_cliente, saldo_disponible, consumos_pendientes_pago, estado, fecha_creacion, fecha_modificacion)
 VALUES(cuentas_skey.nextval, '1006', -2700, 2, 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* eliminarCuentasConConsumosPendientesPago */
+/* omitir_aumento_de_consumos_pendientes_pago_si_monto_de_la_transaccion_es_cero */
 -- 1001007
+INSERT INTO cuentas (numero_cuenta, numero_cliente, saldo_disponible, consumos_pendientes_pago, estado, fecha_creacion, fecha_modificacion)
+VALUES(cuentas_skey.nextval, '1006', -1000, 1, 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
+
+/* omitir_eliminacion_de_cuentas_con_consumos_pendientes_por_pago */
+-- 1001008
 INSERT INTO cuentas (numero_cuenta, numero_cliente, saldo_disponible, consumos_pendientes_pago, estado, fecha_creacion, fecha_modificacion)
 VALUES(cuentas_skey.nextval, '1006', -1900, 1, 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
