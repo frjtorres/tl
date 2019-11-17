@@ -37,11 +37,8 @@ public class ClienteUnit {
     @Autowired
     private TestMapper testMapper;
 
-    /*
-     * get: omitir la representación de clientes eliminados.
-     */
     @Test
-    public void consultarClientesEliminados() throws Exception {
+    public void omitir_consulta_de_clientes_eliminados() throws Exception {
         // given
         long numeroCliente = 1001L;
 
@@ -58,11 +55,8 @@ public class ClienteUnit {
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
     }
 
-    /*
-     * get: omitir la representación de cliente eliminado.
-     */
     @Test
-    public void consultarClienteEliminado() throws Exception {
+    public void omitir_consulta_de_cliente_eliminado() throws Exception {
         // given
         long numeroCliente = 1001L;
 
@@ -75,11 +69,8 @@ public class ClienteUnit {
         assertEquals(HttpStatus.NOT_FOUND.value(), mvcResult.getResponse().getStatus());
     }
 
-    /*
-     * post: omitir la creación de clientes con id duplicada.
-     */
     @Test
-    public void crearClientesIdDuplicadas() throws Exception {
+    public void omitir_creacion_de_clientes_con_id_duplicada() throws Exception {
         // given
         Cliente input = new Cliente();
         input.setTipoId(Parametro.TipoId.CC);
@@ -97,11 +88,8 @@ public class ClienteUnit {
         assertEquals(HttpStatus.CONFLICT.value(), mvcResult.getResponse().getStatus());
     }
 
-    /*
-     * post: permitir la creación de clientes que fueron eliminados.
-     */
     @Test
-    public void crearClientesEliminados() throws Exception {
+    public void permitir_creacion_de_clientes_eliminados_anteriormente() throws Exception {
         // given
         Cliente input = new Cliente();
         input.setTipoId(Parametro.TipoId.CC);
@@ -126,11 +114,8 @@ public class ClienteUnit {
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
     }
 
-    /*
-     * patch: permitir la actualización de nombres y apellidos del cliente solamente.
-     */
     @Test
-    public void actualizarClientesDatosNoPermitidos() throws Exception {
+    public void permitir_solamente_actualizacion_de_nombres_y_apellidos_del_cliente() throws Exception {
         // given
         long numeroCliente = 1004L;
         Cliente input = new Cliente();
@@ -160,11 +145,8 @@ public class ClienteUnit {
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
     }
 
-    /*
-     * delete: omitir la eliminación de clientes con cuentas activas.
-     */
     @Test
-    public void eliminarClientesCuentasActivas() throws Exception {
+    public void omitir_eliminacion_de_clientes_con_cuentas_activas() throws Exception {
         // given
         long numeroCliente = 1005L;
 
