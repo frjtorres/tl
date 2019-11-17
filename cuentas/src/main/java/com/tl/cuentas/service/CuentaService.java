@@ -105,7 +105,6 @@ public class CuentaService {
     }
 
     public Optional<Cuenta> actualizarCuentaConTransaccion(Long numeroCuenta, Transaccion transaccion) {
-        Long nuevoSaldoDisponible;
         Optional<Cuenta> search = consultarCuenta(numeroCuenta);
 
         if(!search.isPresent()) {
@@ -114,41 +113,10 @@ public class CuentaService {
 
         Cuenta resource = search.get();
 
-        switch(transaccion.getTipo()) {
-            case CON:
-                nuevoSaldoDisponible = resource.getSaldoDisponible() - transaccion.getMonto();
-
-                if(resource.getConsumosPendientesPago().equals(Parametro.MAXIMO_NUM_CREDITOS_PENDIENTES_PAGO)) {
-                    String message = messageSource.getMessage("upd.cuentas.exc-credit-exceeded",
-                                                              new Object[] { Parametro.MAXIMO_NUM_CREDITOS_PENDIENTES_PAGO },
-                                                              Locale.getDefault());
-                    throw new IllegalArgumentException(message);
-                }
-
-                if(nuevoSaldoDisponible < 0) {
-                    resource.setConsumosPendientesPago(resource.getConsumosPendientesPago() + 1L);
-                }
-
-                resource.setSaldoDisponible(nuevoSaldoDisponible);
-            break;
-            case REC:
-                nuevoSaldoDisponible = resource.getSaldoDisponible() + transaccion.getMonto();
-
-                if(nuevoSaldoDisponible < 0) {
-                    String message = messageSource.getMessage("upd.cuentas.exc-insufficient-recharge", null, Locale.getDefault());
-                    throw new IllegalArgumentException(message);
-                }
-
-                if(nuevoSaldoDisponible > Parametro.MAXIMO_SALDO_DISPONIBLE) {
-                    String message = messageSource.getMessage("upd.cuentas.exc-balance-exceeded",
-                                                              new Object[] { Parametro.MAXIMO_SALDO_DISPONIBLE },
-                                                              Locale.getDefault());
-                    throw new IllegalArgumentException(message);
-                }
-
-                resource.setConsumosPendientesPago(0L);
-                resource.setSaldoDisponible(nuevoSaldoDisponible);
-            break;
+        if (transaccion.getTipo() == Parametro.TipoTransaccion.CON) {
+            procesarTransaccionDeConsumo(resource, transaccion);
+        } else if (transaccion.getTipo() == Parametro.TipoTransaccion.REC) {
+            procesarTransaccionDeRecarga(resource, transaccion);
         }
 
         CuentaEntity resultEntity = modelMapper.map(resource, CuentaEntity.class);
@@ -177,6 +145,45 @@ public class CuentaService {
         cuentaRepository.save(resultEntity);
 
         return true;
+    }
+
+    private void procesarTransaccionDeConsumo(Cuenta resource, Transaccion transaccion) {
+        if(transaccion.getMonto() <= 0) {
+            return;
+        }
+
+        if(resource.getConsumosPendientesPago().equals(Parametro.MAXIMO_NUM_CREDITOS_PENDIENTES_PAGO)) {
+            String message = messageSource.getMessage("upd.cuentas.exc-credit-exceeded",
+                    new Object[]{Parametro.MAXIMO_NUM_CREDITOS_PENDIENTES_PAGO},
+                    Locale.getDefault());
+            throw new IllegalArgumentException(message);
+        }
+
+        Long nuevoSaldoDisponible = resource.getSaldoDisponible() - transaccion.getMonto();
+        resource.setSaldoDisponible(nuevoSaldoDisponible);
+
+        if(nuevoSaldoDisponible < 0) {
+            resource.setConsumosPendientesPago(resource.getConsumosPendientesPago() + 1L);
+        }
+    }
+
+    private void procesarTransaccionDeRecarga(Cuenta resource, Transaccion transaccion) {
+        Long nuevoSaldoDisponible = resource.getSaldoDisponible() + transaccion.getMonto();
+
+        if(nuevoSaldoDisponible < 0) {
+            String message = messageSource.getMessage("upd.cuentas.exc-insufficient-recharge", null, Locale.getDefault());
+            throw new IllegalArgumentException(message);
+        }
+
+        if(nuevoSaldoDisponible > Parametro.MAXIMO_SALDO_DISPONIBLE) {
+            String message = messageSource.getMessage("upd.cuentas.exc-balance-exceeded",
+                    new Object[] { Parametro.MAXIMO_SALDO_DISPONIBLE },
+                    Locale.getDefault());
+            throw new IllegalArgumentException(message);
+        }
+
+        resource.setConsumosPendientesPago(0L);
+        resource.setSaldoDisponible(nuevoSaldoDisponible);
     }
 
     private String[] getNullProperties(Cuenta cuenta) {
