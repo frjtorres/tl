@@ -1,25 +1,26 @@
 /* ====== Cliente unit samples ====== */
-/* consultarCliente(s)Eliminado(s) */
+/* omitir_consulta_de_clientes_eliminados */
+/* omitir_consulta_de_cliente_eliminado */
 -- 1001
 INSERT INTO clientes (numero_cliente, tipo_id, numero_id, nombres, apellidos, estado, fecha_creacion, fecha_modificacion)
 VALUES(clientes_skey.nextval, 'CC', '1010123000', 'Ana', 'Rodriguez', 'INA', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* crearClientesIdDuplicadas*/
+/* omitir_creacion_de_clientes_con_id_duplicada*/
 -- 1002
 INSERT INTO clientes (numero_cliente, tipo_id, numero_id, nombres, apellidos, estado, fecha_creacion, fecha_modificacion)
 VALUES(clientes_skey.nextval, 'CC', '1010234000', 'Andres', 'Suarez', 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* crearClientesEliminados */
+/* permitir_creacion_de_clientes_eliminados_anteriormente */
 -- 1003
 INSERT INTO clientes (numero_cliente, tipo_id, numero_id, nombres, apellidos, estado, fecha_creacion, fecha_modificacion)
 VALUES(clientes_skey.nextval, 'CC', '1010345000', 'Andrea', 'Aristegui', 'INA', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* actualizarClientesDatosNoPermitidos */
+/* permitir_solamente_actualizacion_de_nombres_y_apellidos_del_cliente */
 -- 1004
 INSERT INTO clientes (numero_cliente, tipo_id, numero_id, nombres, apellidos, estado, fecha_creacion, fecha_modificacion)
 VALUES(clientes_skey.nextval, 'CC', '1010456000', 'Antonio', 'Ariza', 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
 
-/* eliminarClientesCuentasActivas */
+/* omitir_eliminacion_de_clientes_con_cuentas_activas */
 -- 1005
 INSERT INTO clientes (numero_cliente, tipo_id, numero_id, nombres, apellidos, estado, fecha_creacion, fecha_modificacion)
 VALUES(clientes_skey.nextval, 'CC', '1010567000', 'Antonio', 'Ariza', 'ACT', '2019-01-01 12:00:00', '2019-01-01 12:00:00');
